@@ -550,13 +550,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Instantiate the bean.
 		BeanWrapper instanceWrapper = null;
+		// 判断如果 mbd 是单例模式的
 		if (mbd.isSingleton()) {
+			// 从缓存移除
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
+		// 如果还等于 null
 		if (instanceWrapper == null) {
+			// 创建实例，利用反射创建
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
+		// 拿到被包装的bean
 		final Object bean = instanceWrapper.getWrappedInstance();
+		// 拿到那个bean的class
 		Class<?> beanType = instanceWrapper.getWrappedClass();
 		if (beanType != NullBean.class) {
 			mbd.resolvedTargetType = beanType;
@@ -566,6 +572,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					// 调用 MergedBeanDefinitionPostProcessor 实例
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -591,7 +598,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// 设置属性
 			populateBean(beanName, mbd, instanceWrapper);
+			// 初始化 Bean对象
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1773,6 +1782,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #applyBeanPostProcessorsAfterInitialization
 	 */
 	protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+
+		/**
+		 *
+		 * 调用实现了Aware接口的 bean
+		 */
 		if (System.getSecurityManager() != null) {
 			AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
 				invokeAwareMethods(beanName, bean);
@@ -1784,11 +1798,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		Object wrappedBean = bean;
+		//
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 执行 bean的后置处理器 postProcessBeforeInitialization
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			/**
+			 *
+			 * 调用初始化方法
+			 * 调用 afterPropertiesSet
+			 * 调用 用户自定义的 初始化方法
+			 */
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -1797,9 +1819,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 执行 postProcessAfterInitialization
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
+		// 返回包装的 bean
 		return wrappedBean;
 	}
 
