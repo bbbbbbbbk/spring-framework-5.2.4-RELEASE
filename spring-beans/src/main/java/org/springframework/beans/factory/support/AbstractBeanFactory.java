@@ -243,6 +243,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			@Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
 
 		// 对bean 名称做转换
+		// 主要两个操作 1. 对 & 开头的字符截取 2. 从别名 map 里面取
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
@@ -271,7 +272,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			// Check if bean definition exists in this factory.
+			// 拿到父级 BeanFactory
 			BeanFactory parentBeanFactory = getParentBeanFactory();
+			// 如果父级 BeanFactory 不为空,且当前 BeanFactory 不包含当前 bean 名称
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
 				String nameToLookup = originalBeanName(name);

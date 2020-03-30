@@ -80,9 +80,12 @@ public abstract class BeanFactoryUtils {
 	 */
 	public static String transformedBeanName(String name) {
 		Assert.notNull(name, "'name' must not be null");
+		// 如果 name 不以 & 开头
 		if (!name.startsWith(BeanFactory.FACTORY_BEAN_PREFIX)) {
+			// 直接 return
 			return name;
 		}
+		// 截取 & 后面的字符
 		return transformedBeanNameCache.computeIfAbsent(name, beanName -> {
 			do {
 				beanName = beanName.substring(BeanFactory.FACTORY_BEAN_PREFIX.length());
