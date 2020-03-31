@@ -242,12 +242,18 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+		// 得到缓存的key对象
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
+		// 进入的条件是beanName为空 或者 targetSourcedBeans 不包含 beanName
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
+			// 如果 advisedBeans 包含 cacheKey 返回 null
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+
+			// 两种清空 1. beanClass是Advice，Pointcut...的子类
+			// shouldSkip 返回true,
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -315,7 +321,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return the cache key for the given class and name
 	 */
 	protected Object getCacheKey(Class<?> beanClass, @Nullable String beanName) {
+		// 如果beanName不为空
 		if (StringUtils.hasLength(beanName)) {
+			// beanClass 是不是继承 FactoryBean
 			return (FactoryBean.class.isAssignableFrom(beanClass) ?
 					BeanFactory.FACTORY_BEAN_PREFIX + beanName : beanName);
 		}

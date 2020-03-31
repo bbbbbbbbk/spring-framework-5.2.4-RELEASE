@@ -102,26 +102,38 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						}
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
+						// 拿到类型
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
+						// 如果 beanType上有注解 @Aspect 进入
+						// 说明当前bean是一个增强器
 						if (this.advisorFactory.isAspect(beanType)) {
+							// 把beanName加入到aspectNames
 							aspectNames.add(beanName);
+							// 构造一个 AspectMetadata对象
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
+							// 如果切面的类型是PerClauseKind.SINGLETON？暂不理解这个PerClauseKind.SINGLETON是什么d
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+								// 创建一个工厂对象
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+								// 拿到增强器数组
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+								// 如果bean是单例的
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);
 								}
 								else {
+									//多例的, 把创建工厂缓存起来,可以以后创建
 									this.aspectFactoryCache.put(beanName, factory);
 								}
+								// 把classAdvisors全部加入到advisors中
 								advisors.addAll(classAdvisors);
 							}
 							else {
+								// 如果切面的类型不是PerClauseKind.SINGLETON？暂不理解这个PerClauseKind.SINGLETON是什么?
 								// Per target or per this.
 								if (this.beanFactory.isSingleton(beanName)) {
 									throw new IllegalArgumentException("Bean with name '" + beanName +
